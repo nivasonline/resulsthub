@@ -15,28 +15,20 @@ dotenv.config();
 
 const app = express();
 
-// TEST ROUTE
-app.get("/", (req, res) => {
-  res.json({
-    route: "/",
-    time: new Date(),
+app.get('/api/health', (req, res) => {
+  res.status(200).json({
+    success: true,
+    message: 'ResultHub API is running.',
+    time: new Date().toISOString(),
   });
 });
 
-app.get("/api/health", (req, res) => {
-  res.json({
-    route: "/api/health",
-    time: new Date(),
-  });
-});
-// --- Security & core middleware ---
 app.use(helmet());
-
 app.use(
   cors({
     origin: [
-      "http://localhost:5173",
-      "https://resulsthub-five.vercel.app",
+      'http://localhost:5173',
+      'https://resulsthub-five.vercel.app',
     ],
     credentials: true,
   })
@@ -50,20 +42,10 @@ if (process.env.NODE_ENV === 'development') {
   app.use(morgan('dev'));
 }
 
-// --- Health check ---
-app.get('/api/health', (req, res) => {
-  res.status(200).json({
-    success: true,
-    message: 'ResultHub API is running.',
-  });
-});
-
-// --- Routes ---
 app.use('/api/admin', authRoutes);
 app.use('/api/results', resultRoutes);
 app.use('/api/admin', adminRoutes);
 
-// --- 404 + error handler ---
 app.use(notFound);
 app.use(errorHandler);
 
