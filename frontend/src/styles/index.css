@@ -1,0 +1,128 @@
+@import "tailwindcss";
+
+/*
+  Design system: "Ascent"
+  A dark, blue-indigo academic-data aesthetic. The signature motif is the
+  grade gradient — indigo (baseline) rising to cyan (excellence) — echoed
+  in progress bars, the hero glow, and chart accents. Deliberately avoiding
+  pure black/neon-green and cream/terracotta defaults.
+*/
+
+@theme {
+  --color-ink-950: #05070d;
+  --color-ink-900: #0b0f1a;
+  --color-ink-800: #121729;
+  --color-ink-700: #1a2138;
+  --color-ink-600: #262f4d;
+  --color-ink-500: #384268;
+
+  --color-mist-400: #7c88b8;
+  --color-mist-300: #a3addb;
+  --color-mist-200: #c7cfef;
+  --color-mist-100: #e8eaf7;
+
+  --color-indigo-500: #6366f1;
+  --color-indigo-400: #818cf8;
+  --color-cyan-400: #22d3ee;
+  --color-cyan-300: #67e8f9;
+  --color-amber-400: #fbbf24;
+  --color-rose-500: #f43f5e;
+  --color-emerald-400: #34d399;
+
+  --font-display: "Space Grotesk", "Inter", sans-serif;
+  --font-body: "Inter", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, monospace;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background-color: var(--color-ink-900);
+  color: var(--color-mist-100);
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+}
+
+::selection {
+  background-color: var(--color-indigo-500);
+  color: white;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 10px;
+}
+::-webkit-scrollbar-track {
+  background: var(--color-ink-900);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-ink-600);
+  border-radius: 999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-ink-500);
+}
+
+/* Reusable primitives */
+.glass {
+  background: rgba(255, 255, 255, 0.035);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.glass-strong {
+  background: rgba(255, 255, 255, 0.055);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.grade-gradient {
+  background: linear-gradient(90deg, var(--color-indigo-500), var(--color-cyan-400));
+}
+
+.grade-gradient-text {
+  background: linear-gradient(90deg, var(--color-indigo-400), var(--color-cyan-300));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.ambient-glow {
+  position: absolute;
+  border-radius: 999px;
+  filter: blur(90px);
+  opacity: 0.35;
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Print styles for the result memo */
+@media print {
+  body {
+    background: white !important;
+    color: black !important;
+  }
+  .no-print {
+    display: none !important;
+  }
+  .print-memo {
+    box-shadow: none !important;
+    border: 1px solid #ccc !important;
+    background: white !important;
+    color: black !important;
+  }
+}

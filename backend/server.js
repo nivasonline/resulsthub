@@ -1,0 +1,64 @@
+import express from 'express';
+import cors from 'cors';
+import helmet from 'helmet';
+import morgan from 'morgan';
+import dotenv from 'dotenv';
+
+import { connectDB, sequelize } from './models/index.js';
+import authRoutes from './routes/authRoutes.js';
+import resultRoutes from './routes/resultRoutes.js';
+import adminRoutes from './routes/adminRoutes.js';
+import { errorHandler, notFound } from './middleware/errorHandler.js';
+import { globalLimiter } from './middleware/rateLimiter.js';
+
+dotenv.config();
+
+const app = express();
+
+// --- Security & core middleware ---
+app.use(helmet());
+app.use(
+  cors({
+    origin: process.env.CLIENT_URL || 'http://localhost:5173',
+    credentials: true,
+  })
+);
+app.use(express.json({ limit: '2mb' }));
+app.use(express.urlencoded({ extended: true }));
+app.use(globalLimiter);
+
+if (process.env.NODE_ENV === 'development') {
+  app.use(morgan('dev'));
+}
+
+// --- Health check ---
+app.get('/api/health', (req, res) => {
+  res.status(200).json({ success: true, message: 'ResultHub API is running.' });
+});
+
+// --- Routes ---
+app.use('/api/admin', authRoutes); // /api/admin/login, /api/admin/me
+app.use('/api/results', resultRoutes); // /api/results/:hallTicket, /api/results/reg/:regNo
+app.use('/api/admin', adminRoutes); // protected student/upload/analytics routes
+
+// --- 404 + error handler (must be last) ---
+app.use(notFound);
+app.use(errorHandler);
+
+const PORT = process.env.PORT || 5000;
+
+const start = async () => {
+  await connectDB();
+
+  // In production, prefer running migrations explicitly rather than sync().
+  // `alter: true` is convenient for development only.
+  await sequelize.sync({ alter: process.env.NODE_ENV === 'development' });
+
+  app.listen(PORT, () => {
+    console.log(`🚀 ResultHub API listening on port ${PORT} [${process.env.NODE_ENV}]`);
+  });
+};
+
+start();
+
+export default app;
