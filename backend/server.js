@@ -17,12 +17,17 @@ const app = express();
 
 // --- Security & core middleware ---
 app.use(helmet());
+
 app.use(
   cors({
-    origin: process.env.CLIENT_URL || 'http://localhost:5173',
+    origin: [
+      "http://localhost:5173",
+      "https://resulsthub-five.vercel.app",
+    ],
     credentials: true,
   })
 );
+
 app.use(express.json({ limit: '2mb' }));
 app.use(express.urlencoded({ extended: true }));
 app.use(globalLimiter);
@@ -33,15 +38,18 @@ if (process.env.NODE_ENV === 'development') {
 
 // --- Health check ---
 app.get('/api/health', (req, res) => {
-  res.status(200).json({ success: true, message: 'ResultHub API is running.' });
+  res.status(200).json({
+    success: true,
+    message: 'ResultHub API is running.',
+  });
 });
 
 // --- Routes ---
-app.use('/api/admin', authRoutes); // /api/admin/login, /api/admin/me
-app.use('/api/results', resultRoutes); // /api/results/:hallTicket, /api/results/reg/:regNo
-app.use('/api/admin', adminRoutes); // protected student/upload/analytics routes
+app.use('/api/admin', authRoutes);
+app.use('/api/results', resultRoutes);
+app.use('/api/admin', adminRoutes);
 
-// --- 404 + error handler (must be last) ---
+// --- 404 + error handler ---
 app.use(notFound);
 app.use(errorHandler);
 
@@ -50,9 +58,9 @@ const PORT = process.env.PORT || 5000;
 const start = async () => {
   await connectDB();
 
-  // In production, prefer running migrations explicitly rather than sync().
-  // `alter: true` is convenient for development only.
-  await sequelize.sync({ alter: process.env.NODE_ENV === 'development' });
+  await sequelize.sync({
+    alter: process.env.NODE_ENV === 'development',
+  });
 
   app.listen(PORT, () => {
     console.log(`🚀 ResultHub API listening on port ${PORT} [${process.env.NODE_ENV}]`);
