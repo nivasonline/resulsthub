@@ -17,9 +17,18 @@ const app = express();
 
 // TEST ROUTE
 app.get("/", (req, res) => {
-  res.send("THIS IS MY BACKEND");
+  res.json({
+    route: "/",
+    time: new Date(),
+  });
 });
 
+app.get("/api/health", (req, res) => {
+  res.json({
+    route: "/api/health",
+    time: new Date(),
+  });
+});
 // --- Security & core middleware ---
 app.use(helmet());
 
