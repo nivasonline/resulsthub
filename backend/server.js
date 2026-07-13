@@ -15,6 +15,13 @@ dotenv.config();
 
 const app = express();
 
+app.get('/', (req, res) => {
+  res.json({
+    route: '/',
+    time: new Date().toISOString(),
+  });
+});
+
 app.get('/api/health', (req, res) => {
   res.status(200).json({
     success: true,
@@ -24,6 +31,7 @@ app.get('/api/health', (req, res) => {
 });
 
 app.use(helmet());
+
 app.use(
   cors({
     origin: [
@@ -42,9 +50,13 @@ if (process.env.NODE_ENV === 'development') {
   app.use(morgan('dev'));
 }
 
+console.log('Registering API routes...');
+
 app.use('/api/admin', authRoutes);
 app.use('/api/results', resultRoutes);
 app.use('/api/admin', adminRoutes);
+
+console.log('API routes registered.');
 
 app.use(notFound);
 app.use(errorHandler);
