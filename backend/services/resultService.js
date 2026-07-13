@@ -6,6 +6,31 @@ import {
   getOverallResult,
 } from '../utils/gradeCalculator.js';
 
+const cache = new Map();
+const CACHE_TTL_MS = 5 * 60 * 1000;
+
+function getCachedResult(key) {
+  const cached = cache.get(key);
+
+  if (!cached) {
+    return null;
+  }
+
+  if (cached.expiresAt <= Date.now()) {
+    cache.delete(key);
+    return null;
+  }
+
+  return cached.value;
+}
+
+function setCachedResult(key, value) {
+  cache.set(key, {
+    value,
+    expiresAt: Date.now() + CACHE_TTL_MS,
+  });
+}
+
 async function buildResultPayload(student) {
   const subjects = student.subjects.map((s) => s.toJSON());
 
@@ -31,27 +56,103 @@ async function buildResultPayload(student) {
 }
 
 export async function getResultByHallTicket(hallTicket) {
+  const cachedResult = getCachedResult(hallTicket);
+
+  if (cachedResult) {
+    return cachedResult;
+  }
+
   const student = await Student.findOne({
-    where: { hallTicket, published: true },
-    include: [{ model: Subject, as: 'subjects' }],
+    where: {
+      hallTicket,
+      published: true,
+    },
+    attributes: [
+      'id',
+      'hallTicket',
+      'registrationNumber',
+      'name',
+      'fatherName',
+      'motherName',
+      'department',
+      'semester',
+      'section',
+      'photoUrl',
+    ],
+    include: [{
+      model: Subject,
+      as: 'subjects',
+      attributes: [
+        'subjectCode',
+        'subjectName',
+        'internalMarks',
+        'externalMarks',
+        'credits',
+        'total',
+        'grade',
+        'gradePoint',
+        'result',
+      ],
+    }],
   });
 
   if (!student) {
     throw new ApiError(404, 'No published result found for this hall ticket number.');
   }
 
-  return buildResultPayload(student);
+  const result = await buildResultPayload(student);
+  setCachedResult(hallTicket, result);
+
+  return result;
 }
 
 export async function getResultByRegNumber(registrationNumber) {
+  const cachedResult = getCachedResult(registrationNumber);
+
+  if (cachedResult) {
+    return cachedResult;
+  }
+
   const student = await Student.findOne({
-    where: { registrationNumber, published: true },
-    include: [{ model: Subject, as: 'subjects' }],
+    where: {
+      registrationNumber,
+      published: true,
+    },
+    attributes: [
+      'id',
+      'hallTicket',
+      'registrationNumber',
+      'name',
+      'fatherName',
+      'motherName',
+      'department',
+      'semester',
+      'section',
+      'photoUrl',
+    ],
+    include: [{
+      model: Subject,
+      as: 'subjects',
+      attributes: [
+        'subjectCode',
+        'subjectName',
+        'internalMarks',
+        'externalMarks',
+        'credits',
+        'total',
+        'grade',
+        'gradePoint',
+        'result',
+      ],
+    }],
   });
 
   if (!student) {
     throw new ApiError(404, 'No published result found for this registration number.');
   }
 
-  return buildResultPayload(student);
+  const result = await buildResultPayload(student);
+  setCachedResult(registrationNumber, result);
+
+  return result;
 }
