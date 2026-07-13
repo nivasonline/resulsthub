@@ -15,6 +15,11 @@ dotenv.config();
 
 const app = express();
 
+// TEST ROUTE
+app.get("/", (req, res) => {
+  res.send("THIS IS MY BACKEND");
+});
+
 // --- Security & core middleware ---
 app.use(helmet());
 
