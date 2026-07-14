@@ -82,7 +82,7 @@ export async function importResultsFromExcel(filePath) {
           section: String(first.section || '').trim() || null,
           email: String(first.email || '').trim() || null,
           phone: String(first.phone || '').trim() || null,
-          published: false,
+          published: true,
         },
         transaction,
       });
